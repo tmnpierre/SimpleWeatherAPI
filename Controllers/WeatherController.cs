@@ -22,12 +22,38 @@ namespace WeatherService.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var jsonData = await response.Content.ReadAsStringAsync();
-                return Ok(jsonData);
+                var externalWeatherData = JsonConvert.DeserializeObject<ExternalWeatherApiResponse>(jsonData);
+
+                var weatherResponse = new WeatherResponse
+                {
+                    City = externalWeatherData.Name,
+                    Temperature = externalWeatherData.Main.Temp,
+                    Description = externalWeatherData.Weather[0].Description
+                };
+
+                return Ok(weatherResponse);
             }
             else
             {
                 return StatusCode((int)response.StatusCode, "Error calling the weather service");
             }
         }
+    }
+
+    public class ExternalWeatherApiResponse
+    {
+        public string Name { get; set; }
+        public Main Main { get; set; }
+        public Weather[] Weather { get; set; }
+    }
+
+    public class Main
+    {
+        public float Temp { get; set; }
+    }
+
+    public class Weather
+    {
+        public string Description { get; set; }
     }
 }
